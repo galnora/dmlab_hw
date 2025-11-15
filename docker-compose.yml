@@ -1,0 +1,78 @@
+version: "3.9"
+
+services:
+  db:
+    image: mysql:8
+    container_name: mysql
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  processor:
+    build:
+      context: .
+      dockerfile: ./processor/Dockerfile
+    container_name: processor
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    ports:
+      - "8001:8001"
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  collector:
+    build:
+      context: .
+      dockerfile: ./collector/Dockerfile
+    container_name: collector
+    depends_on:
+      processor:
+        condition: service_healthy
+    env_file:
+      - .env
+    restart: no
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: ./scheduler/Dockerfile
+    container_name: scheduler
+    depends_on:
+      processor:
+        condition: service_healthy
+    env_file:
+      - .env
+    restart: always
+
+  dashboard:
+    build: 
+      context: .
+      dockerfile: ./dashboard/Dockerfile
+    container_name: dashboard
+    depends_on:
+      processor:
+        condition: service_healthy
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    restart: always
+
+volumes:
+  mysql_data:

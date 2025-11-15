@@ -1,0 +1,2 @@
+PATH=/usr/local/bin:/usr/bin:/bin
+00 22 * * * python /app/collector_daily.py >> /var/log/cron.log 2>&1

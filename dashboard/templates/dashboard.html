@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Big Pharma Stock Trends</title>
+
+    <!-- Chart.js & plugins -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.2.1/dist/chartjs-plugin-annotation.min.js"></script>
+
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #fafafa; }
+        h1 { text-align: center; margin-bottom: 30px; }
+        .chart-container { width: 90%; margin: auto; }
+        table { width: 90%; margin: 30px auto; border-collapse: collapse; }
+        th, td { padding: 10px 15px; border-bottom: 1px solid #ccc; text-align: center; }
+        th { background: #007bff; color: white; }
+        select { padding: 8px; margin: 10px; }
+    </style>
+</head>
+
+<body>
+    <h1>Big Pharma Stock Trends before, during and after COVID (2017–2025)</h1>
+
+    <div style="text-align:center">
+        <label>Select stock:</label>
+        <select id="symbolSelect">
+            {% for code, name in stocks.items() %}
+            <option value="{{ code }}">{{ name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="stockChart"></canvas>
+    </div>
+
+    <h2 style="text-align:center; margin-top:50px;">Period Growth and Additional Metrics</h2>
+
+    <table>
+      <tr>
+          <th>Company</th>
+          <th>Pre-COVID Growth (%)</th>
+          <th>COVID Growth (%)</th>
+          <th>Post-COVID Growth (%)</th>
+          <th>Volatility</th>
+          <th>Month-over-Month Change (MoM %)</th>
+          <th>Average Volume</th>
+      </tr>
+
+      {% for m in metrics %}
+      <tr>
+          <td>{{ m.name }}</td>
+          <td>{{ m.growth_pre_covid or '-' }}</td>
+          <td>{{ m.growth_covid or '-' }}</td>
+          <td>{{ m.growth_post_covid or '-' }}</td>
+
+          <td>
+            {% if analytics[m.symbol].volatility is not none %}
+              {{ analytics[m.symbol].volatility }}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+
+          <td>
+            {% if analytics[m.symbol].mom_change is not none %}
+              {{ analytics[m.symbol].mom_change }}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+
+          <td>
+            {% if analytics[m.symbol].avg_volume is not none %}
+              {{ analytics[m.symbol].avg_volume }}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+      </tr>
+      {% endfor %}
+    </table>
+
+    <script>
+    Chart.register(window['chartjs-plugin-annotation']);
+
+    const ctx = document.getElementById('stockChart').getContext('2d');
+    const select = document.getElementById('symbolSelect');
+    let chart;
+
+    async function loadData(symbol) {
+        const res = await fetch(`/api/trend/${symbol}`);
+        const data = await res.json();
+
+        const labels = data.map(d => d.date);
+        const values = data.map(d => d.close);
+
+        if (chart) chart.destroy();
+
+        chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: symbol + ' price',
+                    data: values,
+                    borderColor: '#007bff',
+                    pointRadius: 1,
+                    fill: false,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: { unit: 'year' },
+                        title: { display: true, text: 'Date' }
+                    },
+                    y: {
+                        title: { display: true, text: 'Price (USD)' }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: `${symbol} – Price Timeline with COVID Phases`
+                    },
+                    annotation: {
+                        annotations: {
+                            pre: {
+                                type: 'box',
+                                xMin: '2017-01-01',
+                                xMax: '2020-01-01',
+                                backgroundColor: 'rgba(0, 255, 0, 0.08)',
+                                borderWidth: 0,
+                                label: {
+                                    display: true,
+                                    content: 'Pre-COVID',
+                                    position: { x: 'center', y: 'start' },
+                                    color: '#006400',
+                                    backgroundColor: 'rgba(255,255,255,0.8)'
+                                }
+                            },
+                            covid: {
+                                type: 'box',
+                                xMin: '2020-01-01',
+                                xMax: '2023-05-01',
+                                backgroundColor: 'rgba(255, 165, 0, 0.1)',
+                                borderWidth: 0,
+                                label: {
+                                    display: true,
+                                    content: 'COVID Period',
+                                    position: { x: 'center', y: 'start' },
+                                    color: '#8B4513',
+                                    backgroundColor: 'rgba(255,255,255,0.8)'
+                                }
+                            },
+                            post: {
+                                type: 'box',
+                                xMin: '2023-05-01',
+                                xMax: labels[labels.length - 1],
+                                backgroundColor: 'rgba(255, 0, 0, 0.08)',
+                                borderWidth: 0,
+                                label: {
+                                    display: true,
+                                    content: 'Post-COVID',
+                                    position: { x: 'center', y: 'start' },
+                                    color: '#8B0000',
+                                    backgroundColor: 'rgba(255,255,255,0.8)'
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    loadData(select.value);
+    select.addEventListener('change', () => loadData(select.value));
+    </script>
+
+</body>
+</html>
