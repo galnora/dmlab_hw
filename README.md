@@ -64,25 +64,25 @@ The project uses .env for configuration. A sample file is provided.
 
 Clone the project
 
-```bash
+```
   git clone git@github.com:galnora/dmlab_hw.git
 ```
 
 Go to the project directory
 
-```bash
+```
   cd dmlab_hw
 ```
 Create .env
 
-```bash
+```
   cp .env.sample .env
 ```
 Fill in your API key.
 
 Build and start the services
 
-```bash
+```
   docker-compose up --build -d
 ```
 
@@ -90,7 +90,7 @@ Access the dashboard on http://localhost:8000
 
 Check the logs
 
-```bash
+```
   docker-compose logs -f
 ```
 
@@ -99,7 +99,7 @@ Check the logs
 
 #### Ingest stock records
 
-```http
+```
   POST /api/v1/ingest/{symbol}
 ```
 
@@ -112,7 +112,7 @@ List of stock records with: `date`, `open`, `high`, `low`, `close`, `volume`
 
 #### Get full trend data
 
-```http
+```
   GET /api/v1/trend/{symbol}
 ```
 
@@ -125,7 +125,7 @@ Full time-series data (close price, volume, date) from 2017 onward.
 
 #### Get period-based growth metrics
 
-```http
+```
   GET /api/v1/metrics/{symbol}
 ```
 
@@ -140,7 +140,7 @@ Post-COVID growth (%)
 
 #### Get analytics (volatility, MoM change, volume)
 
-```http
+```
   GET /api/v1/analytics/{symbol}
 ```
 
