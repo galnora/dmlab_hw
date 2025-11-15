@@ -1,8 +1,7 @@
 
 # Big Pharma Stock Analytics 
 
-This project implements a microservice-based data pipeline that collects stock market time-series data from the public AlphaVantage API, processes and stores it in a MySQL database, computes business-relevant analytics, and exposes the results through a REST API and a visual dashboard.
-The focus of the exercise is demonstrating real-world backend architecture: data ingestion, processing, API design, containerization, scheduling, and visualization.
+This project implements a microservice-based data pipeline that collects stock market time-series data from the public AlphaVantage API, processes and stores it in a MySQL database, computes analytics, and exposes the results through a REST API and a visual dashboard.
 
 
 ## Architecture
@@ -66,13 +65,13 @@ The project uses .env for configuration. A sample file is provided.
 Clone the project
 
 ```bash
-  git clone https://link-to-project
+  git clone git@github.com:galnora/dmlab_hw.git
 ```
 
 Go to the project directory
 
 ```bash
-  cd my-project
+  cd dmlab_hw
 ```
 Create .env
 
